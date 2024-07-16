@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, request
+from typing_extensions import assert_never
 import workos
 from workos import client as workos_client
 from flask_socketio import SocketIO, emit
@@ -16,7 +17,7 @@ app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
 if __name__ == "__main__":
-    socketio.run(app)
+    socketio.run(app)  # type: ignore
 
 workos.api_key = os.getenv("WORKOS_API_KEY")
 workos.base_api_url = "http://localhost:5000/" if DEBUG else workos.base_api_url
@@ -49,6 +50,8 @@ def home():
 @app.route("/directory")
 def directory():
     directory_id = request.args.get("id")
+    if not directory_id:
+        return "No directory ID provided", 400
     directory = workos.client.directory_sync.get_directory(directory_id)
     return render_template("directory.html", directory=directory.model_dump(), id=directory.id)
 
@@ -64,9 +67,11 @@ def directory_users():
 @app.route("/user")
 def directory_user():
     user_id = request.args.get("id")
+    if not user_id:
+        return "No user ID provided", 400
     user = workos.client.directory_sync.get_user(
         user=user_id)
-    print(user.model_dump())
+
     return render_template("user.html", user=user.model_dump(), id=user_id)
 
 
@@ -82,6 +87,9 @@ def directory_groups():
 @app.route("/group")
 def directory_group():
     group_id = request.args.get("id")
+    if not group_id:
+        return "No user ID provided", 400
+
     group = workos_client.directory_sync.get_group(
         group=group_id)
 
