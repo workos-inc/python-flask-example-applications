@@ -38,13 +38,13 @@ def home():
     directories = workos.client.directory_sync.list_directories(
         before=before, after=after, limit=5, order=None
     )
-    before = directories["list_metadata"]["before"]
-    after = directories["list_metadata"]["after"]
+    
+    before = directories.list_metadata.before
+    after = directories.list_metadata.after
     return render_template(
-        "home.html", directories=directories["data"], before=before, after=after
+        "home.html", directories=directories.data, before=before, after=after
     )
-
-
+ 
 @app.route("/directory")
 def directory():
     directory_id = request.args.get("id")
