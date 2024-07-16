@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="../static/home.css">
 </head>
 
-<body class="container_success">
+<body>
     <div class="logged_in_nav">
         <div class="flex">
             <div>
@@ -23,9 +23,9 @@
     <div class='flex'>        
         <div class="logged_in_div_right">
             <div class="flex_column">
-                <div class="flex space-between width-507px">
+                <div class="flex space-between width-40vw">
                     <div>
-                        <h2>User Details</h2>
+                        <h2>Directory Users</h2>
                     </div>
                     <div>
                         <a href="javascript:history.back()"><button
@@ -34,15 +34,17 @@
                 </div>
                 {% if users['data']|length > 0 %}
                 <div>
-                    <table class="width-507px">
+                    <table class="width-40vw">
                         <tr>
                           <th>Name</th>
                           <th>Email</th>
+                          <th>View User</th>
                         </tr>
                         {% for user in users['data'] %}           
                           <tr>
                             <td class="ta-left">{{user['first_name']}} {{user['last_name']}}</td>
-                            <td class="ta-left"><code>{{user['username']}}</code></td>                                            
+                            <td class="ta-left"><code>{{user['username']}}</code></td>
+                            <td><a class="button button-outline" href="/user?id={{user['id']}}">{{ lucide.icon('settings-2', stroke_width=1) }}</a></td>                                            
                           </tr>
                         {% endfor %}                    
                     </table>

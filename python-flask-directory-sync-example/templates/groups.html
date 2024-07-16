@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="../static/home.css">
 </head>
 
-<body class="container_success">
+<body>
     <div class="logged_in_nav">
         <div class="flex">
             <div>
@@ -25,7 +25,7 @@
 
         <div class="logged_in_div_right">
             <div class="flex_column">
-                <div class="flex space-between width-507px">
+                <div class="flex space-between width-40vw">
                     <div>
                         <h2>Groups Details</h2>
                     </div>
@@ -36,15 +36,17 @@
                 </div>
                 {% if groups['data']|length > 0 %}
                 <div>
-                    <table class="width-507px">
+                    <table class="width-40vw">
                         <tr>
                           <th>Name</th>
                           <th>ID</th>
+                          <th>View Group</th>
                         </tr>
                         {% for group in groups['data'] %}           
                           <tr>
                             <td class="ta-left">{{group['name']}}</td>
-                            <td class="ta-left"><code>{{group['id']}}</code></td>                                            
+                            <td class="ta-left"><code>{{group['id']}}</code></td>
+                            <td><a class="button button-outline" href="/group?id={{group['id']}}">{{ lucide.icon('settings-2', stroke_width=1) }}</a></td>                                                      
                           </tr>
                         {% endfor %}                    
                     </table>

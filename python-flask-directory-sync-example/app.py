@@ -61,6 +61,15 @@ def directory_users():
     return render_template("users.html", users=users)
 
 
+@app.route("/user")
+def directory_user():
+    user_id = request.args.get("id")
+    user = workos.client.directory_sync.get_user(
+        user_id=user_id)
+    print(user.model_dump())
+    return render_template("user.html", user=user.model_dump(), id=user_id)
+
+
 @app.route("/groups")
 def directory_groups():
     directory_id = request.args.get("id")
@@ -68,6 +77,15 @@ def directory_groups():
         directory=directory_id, limit=100)
 
     return render_template("groups.html", groups=groups)
+
+
+@app.route("/group")
+def directory_group():
+    group_id = request.args.get("id")
+    group = workos_client.directory_sync.get_group(
+        group_id=group_id)
+
+    return render_template("group.html", group=group.model_dump(), id=group_id)
 
 
 @app.route("/webhooks", methods=["GET", "POST"])
