@@ -65,7 +65,7 @@ def directory_users():
 def directory_user():
     user_id = request.args.get("id")
     user = workos.client.directory_sync.get_user(
-        user_id=user_id)
+        user=user_id)
     print(user.model_dump())
     return render_template("user.html", user=user.model_dump(), id=user_id)
 
@@ -83,7 +83,7 @@ def directory_groups():
 def directory_group():
     group_id = request.args.get("id")
     group = workos_client.directory_sync.get_group(
-        group_id=group_id)
+        group=group_id)
 
     return render_template("group.html", group=group.model_dump(), id=group_id)
 
