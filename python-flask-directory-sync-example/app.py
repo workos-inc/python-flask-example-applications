@@ -38,31 +38,34 @@ def home():
     directories = workos.client.directory_sync.list_directories(
         before=before, after=after, limit=5, order=None
     )
-    
+    directories.list_method
     before = directories.list_metadata.before
     after = directories.list_metadata.after
     return render_template(
         "home.html", directories=directories.data, before=before, after=after
     )
- 
+
+
 @app.route("/directory")
 def directory():
     directory_id = request.args.get("id")
     directory = workos.client.directory_sync.get_directory(directory_id)
-    return render_template("directory.html", directory=directory, id=directory["id"])
+    return render_template("directory.html", directory=directory.model_dump(), id=directory.id)
 
 
 @app.route("/users")
 def directory_users():
     directory_id = request.args.get("id")
-    users = workos.client.directory_sync.list_users(directory=directory_id, limit=100)
+    users = workos.client.directory_sync.list_users(
+        directory=directory_id, limit=100)
     return render_template("users.html", users=users)
 
 
 @app.route("/groups")
 def directory_groups():
     directory_id = request.args.get("id")
-    groups = workos_client.directory_sync.list_groups(directory=directory_id, limit=100)
+    groups = workos_client.directory_sync.list_groups(
+        directory=directory_id, limit=100)
 
     return render_template("groups.html", groups=groups)
 
@@ -73,7 +76,8 @@ def webhooks():
         payload = request.get_data()
         sig_header = request.headers["WorkOS-Signature"]
         response = workos_client.webhooks.verify_event(
-            payload=payload, sig_header=sig_header, secret=os.getenv("WEBHOOKS_SECRET")
+            payload=payload, sig_header=sig_header, secret=os.getenv(
+                "WEBHOOKS_SECRET")
         )
 
         message = json.dumps(response)
