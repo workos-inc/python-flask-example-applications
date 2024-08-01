@@ -6,6 +6,12 @@ from workos import client as workos_client
 from flask_socketio import SocketIO, emit
 import json
 from flask_lucide import Lucide
+import workos.directory_sync
+import workos.resources
+import workos.resources.directory_sync
+import workos.typing
+import workos.utils
+import workos.utils.connection_types
 
 
 DEBUG = False
@@ -37,9 +43,9 @@ def home():
     before = request.args.get("before")
     after = request.args.get("after")
     directories = workos.client.directory_sync.list_directories(
-        before=before, after=after, limit=5, order=None
+        before=before, after=after, limit=5
     )
-    directories.list_method
+
     before = directories.list_metadata.before
     after = directories.list_metadata.after
     return render_template(
@@ -53,14 +59,16 @@ def directory():
     if not directory_id:
         return "No directory ID provided", 400
     directory = workos.client.directory_sync.get_directory(directory_id)
-    return render_template("directory.html", directory=directory.model_dump(), id=directory.id)
+    
+    return render_template(
+        "directory.html", directory=directory.model_dump(), id=directory.id
+    )
 
 
 @app.route("/users")
 def directory_users():
     directory_id = request.args.get("id")
-    users = workos.client.directory_sync.list_users(
-        directory=directory_id, limit=100)
+    users = workos.client.directory_sync.list_users(directory=directory_id, limit=100)
     return render_template("users.html", users=users)
 
 
@@ -69,8 +77,7 @@ def directory_user():
     user_id = request.args.get("id")
     if not user_id:
         return "No user ID provided", 400
-    user = workos.client.directory_sync.get_user(
-        user=user_id)
+    user = workos.client.directory_sync.get_user(user=user_id)
 
     return render_template("user.html", user=user.model_dump(), id=user_id)
 
@@ -78,8 +85,7 @@ def directory_user():
 @app.route("/groups")
 def directory_groups():
     directory_id = request.args.get("id")
-    groups = workos_client.directory_sync.list_groups(
-        directory=directory_id, limit=100)
+    groups = workos_client.directory_sync.list_groups(directory=directory_id, limit=100)
 
     return render_template("groups.html", groups=groups)
 
@@ -90,24 +96,50 @@ def directory_group():
     if not group_id:
         return "No user ID provided", 400
 
-    group = workos_client.directory_sync.get_group(
-        group=group_id)
+    group = workos_client.directory_sync.get_group(group=group_id)
 
     return render_template("group.html", group=group.model_dump(), id=group_id)
 
 
+@app.route("/events")
+def events():
+    after = request.args.get("after")
+    events = workos.client.events.list_events(
+        events=[
+            "dsync.activated",
+            "dsync.deleted",
+            "dsync.group.created",
+            "dsync.group.deleted",
+            "dsync.group.updated",
+            "dsync.user.created",
+            "dsync.user.deleted",
+            "dsync.user.updated",
+            "dsync.group.user_added",
+            "dsync.group.user_removed",
+        ],
+        after=after,
+        limit=20,
+    )
+
+    after = events.list_metadata.after
+    events_data = list(map(lambda event: event.model_dump(), events.data))
+    return render_template("events.html", events=events_data, after=after)
+
+
 @app.route("/webhooks", methods=["GET", "POST"])
 def webhooks():
+    signing_secret = os.getenv("WEBHOOKS_SECRET")
     if request.data:
-        payload = request.get_data()
-        sig_header = request.headers["WorkOS-Signature"]
-        response = workos_client.webhooks.verify_event(
-            payload=payload, sig_header=sig_header, secret=os.getenv(
-                "WEBHOOKS_SECRET")
-        )
-
-        message = json.dumps(response)
-        socketio.emit("webhook_received", message)
+        if signing_secret:
+            payload = request.get_data()
+            sig_header = request.headers["WorkOS-Signature"]
+            response = workos_client.webhooks.verify_event(
+                payload=payload, sig_header=sig_header, secret=signing_secret
+            )
+            message = json.dumps(response.dict())
+            socketio.emit("webhook_received", message)
+        else:
+            print("No signing secret configured")
 
     # Return a 200 to prevent retries based on validation
     return render_template("webhooks.html")

@@ -133,6 +133,10 @@ h1 {
   bottom: 20%;
 }
 
+.event_bodies {
+  position: inherit !important;
+}
+
 .logged_in_div_left h1 {
   color: #111111;
   font-size: 75px;
@@ -143,14 +147,12 @@ h1 {
 }
 
 .home-hero-gradient {
-  background-image: linear-gradient(
-    45deg,
-    #a163f1,
-    #6363f1 22%,
-    #3498ea 40%,
-    #40dfa3 67%,
-    rgba(64, 223, 163, 0)
-  );
+  background-image: linear-gradient(45deg,
+      #a163f1,
+      #6363f1 22%,
+      #3498ea 40%,
+      #40dfa3 67%,
+      rgba(64, 223, 163, 0));
   background-size: 150% 100%;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
@@ -192,14 +194,11 @@ div.text_box {
   overflow: scroll;
   border-width: 3px;
   border-style: solid;
-  border-image: linear-gradient(
-      #a163f1,
+  border-image: linear-gradient(#a163f1,
       #6363f1 22%,
       #3498ea 40%,
       #40dfa3 67%,
-      rgba(64, 223, 163, 0)
-    )
-    0 100%;
+      rgba(64, 223, 163, 0)) 0 100%;
 }
 
 .logged_in_nav {
@@ -243,6 +242,10 @@ div.text_box {
 
 pre.prettyprint {
   border: none !important;
+}
+
+pre.overflow_scroll {
+  overflow: scroll;
 }
 
 .text_input {
@@ -354,6 +357,15 @@ th {
   padding: 15px 40px;
 }
 
+tr.event_summary {
+  text-align: left;
+}
+
+tr.selected_event {
+  font-weight: bold;
+  background-color: #ebebf2;
+}
+
 .width-75 {
   width: 75%;
 }
@@ -418,6 +430,6 @@ th {
   border: none;
 }
 
-#noborder > :first-child {
+.prettyprinted> :first-child {
   display: none;
 }

@@ -1,0 +1,94 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css')}}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter">
+</head>
+
+<body class="container_success">
+    <div class="logged_in_nav">
+        <div class="flex">
+            <div>
+                <img src="../static/images/workos-logo-with-text.png" alt="workos logo">
+            </div>
+        </div>
+        <div>
+            <a href="https://workos.com/docs" target="_blank"><button class='button nav-item'>Documentation</button></a>
+            <a href="https://workos.com/docs/reference" target="_blank"><button class='button nav-item'>API
+                    Reference</button></a>
+            <a href="https://workos.com/blog" target="_blank"><button
+                    class='button nav-item blog-nav-button'>Blog</button></a>
+            <a href="https://workos.com/" target="_blank"><button class='button button-outline'>WorkOS</button></a>
+        </div>
+    </div>
+    <div class="flex">
+        <div class="logged_in_div_left">
+            <div class='flex_column'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr class="event_summary" data-clickable=true data-event-id="{{ event['id'] }}"
+                            onclick="displayEvent(this)">
+                            <td class="event_type">{{ event['event'] }}</td>
+                            <td>{{ event['created_at'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="flex-end">
+                    {% if after %}
+                    <div>
+                        <a href="/events?after={{after}}"><button class="button page-title">Next</button></a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class='logged_in_div_right event_bodies flex_column width-40vw'>
+            {% for event in events %}
+            <pre id="{{ event['id'] }}" class="prettyprint overflow_scroll height-70vh" hidden>
+                    {{event|tojson_pretty}}
+            </pre>
+            {% endfor %}
+        </div>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+        function deselectEvent(element) {
+            if (!element) {
+                return;
+            }
+            element.classList.remove('selected_event');
+            const eventId = element.getAttribute('data-event-id');
+            const eventBody = document.getElementById(eventId);
+            eventBody.hidden = true;
+        }
+
+        function selectEvent(element) {
+            if (!element) {
+                return;
+            }
+            element.classList.add('selected_event');
+            const eventId = element.getAttribute('data-event-id');
+            const eventBody = document.getElementById(eventId);
+            eventBody.hidden = false;
+        }
+        function displayEvent(element) {
+            const previousSelectedEvent = selectedEvent;
+            deselectEvent(previousSelectedEvent);
+            selectedEvent = element;
+            selectEvent(selectedEvent);
+        }
+
+        let selectedEvent = document.getElementsByClassName('event_summary')[0];
+        displayEvent(selectedEvent);
+    </script>
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+</body>
+
+</html>
