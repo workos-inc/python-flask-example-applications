@@ -8,7 +8,7 @@
     <div class="logged_in_nav">
         <div class="flex">
             <div>
-                <img src="../static/images/workos-logo-with-text.png" alt="workos logo">
+                <a href="/"><img src="../static/images/workos-logo-with-text.png" alt="workos logo"></a>
             </div>
         </div>
         <div>
@@ -21,7 +21,7 @@
         </div>
     </div>
     <div class='flex'>
-        
+
 
         <div class="logged_in_div_right">
             <div class="flex_column">
@@ -31,29 +31,30 @@
                     </div>
                     <div>
                         <a href="javascript:history.back()"><button
-                            class='button button-sm button-outline'>Back</button></a>
+                                class='button button-sm button-outline'>Back</button></a>
                     </div>
                 </div>
                 {% if groups['data']|length > 0 %}
                 <div>
                     <table class="width-40vw">
                         <tr>
-                          <th>Name</th>
-                          <th>ID</th>
-                          <th>View Group</th>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>View Group</th>
                         </tr>
-                        {% for group in groups['data'] %}           
-                          <tr>
+                        {% for group in groups['data'] %}
+                        <tr>
                             <td class="ta-left">{{group['name']}}</td>
                             <td class="ta-left"><code>{{group['id']}}</code></td>
-                            <td><a class="button button-outline" href="/group?id={{group['id']}}">{{ lucide.icon('settings-2', stroke_width=1) }}</a></td>                                                      
-                          </tr>
-                        {% endfor %}                    
+                            <td><a class="button button-outline" href="/group?id={{group['id']}}">{{
+                                    lucide.icon('settings-2', stroke_width=1) }}</a></td>
+                        </tr>
+                        {% endfor %}
                     </table>
                 </div>
                 {% else %}
                 <div class="card width-40vw"><code>No Groups Found</code></div>
-                {% endif %}                
+                {% endif %}
             </div>
         </div>
 
