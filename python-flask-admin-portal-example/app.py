@@ -1,5 +1,5 @@
 import os
-from typing import TypeGuard, get_args
+from typing import TypeGuard, cast, get_args
 from flask import Flask, redirect, render_template, request, url_for
 import workos
 from workos import client as workos_client
@@ -21,12 +21,6 @@ lucide = Lucide(app)
 workos.api_key = os.getenv("WORKOS_API_KEY")
 workos.client_id = os.getenv("WORKOS_CLIENT_ID")
 workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
-
-
-def is_portal_link_intent(
-    value: str,
-) -> TypeGuard[workos.portal.PortalLinkIntent]:
-    return value in get_args(workos.portal.PortalLinkIntent)
 
 
 @app.route("/")
@@ -69,10 +63,11 @@ def provision_enterprise():
 @app.route("/launch_admin_portal", methods=["GET", "POST"])
 def launch_admin_portal():
     intent = request.args.get("intent")
+
     if intent is None:
         return "Missing intent parameter", 400
 
-    if not is_portal_link_intent(intent):
+    if not intent in tuple(("audit_logs", "dsync", "log_streams", "sso")):
         return "Invalid intent parameter", 400
 
     portal_link = workos_client.portal.generate_link(
