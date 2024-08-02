@@ -9,6 +9,7 @@ MarkupSafe==2.0.1
 requests==2.26.0
 urllib3==1.26.7
 Werkzeug==2.0.1
-workos>=1.23.3
+../../SDKs/workos-python
+workos>=4.0.0
 python-dotenv
 flask-lucide==0.2.0
