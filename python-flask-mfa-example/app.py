@@ -1,4 +1,5 @@
 import os
+from typing import Any, cast
 from flask import Flask, session, redirect, render_template, request, url_for, jsonify
 import json
 import workos
@@ -13,7 +14,7 @@ lucide = Lucide(app)
 # WorkOS Setup
 
 workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.project_id = os.getenv("WORKOS_CLIENT_ID")
+workos.client_id = os.getenv("WORKOS_CLIENT_ID")
 workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
 
 
@@ -41,19 +42,21 @@ def enroll_factor_details():
 def enroll_sms_factor():
     factor_type = request.form.get("type")
     phone_number = request.form.get("phone_number")
+    if not factor_type in ("sms", "totp"):
+        return "Invalid factor type"
 
     new_factor = workos.client.mfa.enroll_factor(
         type=factor_type, phone_number=phone_number
     )
 
-    session["factor_list"].append(new_factor)
+    session["factor_list"].append(new_factor.dict())
     session.modified = True
     return redirect("/")
 
 
 @app.route("/enroll_totp_factor", methods=["POST"])
 def enroll_totp_factor():
-    data = request.get_json()
+    data = cast(Any, request.get_json())
     type = data["type"]
     issuer = data["issuer"]
     user = data["user"]
@@ -62,9 +65,11 @@ def enroll_totp_factor():
         type=type, totp_issuer=issuer, totp_user=user
     )
 
-    session["factor_list"].append(new_factor)
+    if new_factor.type == "totp":
+        session["current_factor_qr"] = new_factor.totp.qr_code
+    session["factor_list"].append(new_factor.dict())
     session.modified = True
-    return jsonify(new_factor["totp"]["qr_code"])
+    return jsonify(new_factor.dict())
 
 
 @app.route("/factor_detail")
@@ -105,7 +110,7 @@ def challenge_factor():
             authentication_factor_id=authentication_factor_id,
         )
 
-    session["challenge_id"] = challenge["id"]
+    session["challenge_id"] = challenge.id
     session.modified = True
     return render_template("challenge_factor.html")
 
@@ -120,15 +125,15 @@ def verify_factor():
 
     code = buildCode(request.form)
     challenge_id = session["challenge_id"]
-    verify_factor = workos.client.mfa.verify_factor(
+    verify_factor = workos.client.mfa.verify_challenge(
         authentication_challenge_id=challenge_id,
         code=code,
     )
 
     return render_template(
         "challenge_success.html",
-        challenge=verify_factor["challenge"],
-        valid=verify_factor["valid"],
+        challenge=verify_factor.challenge,
+        valid=verify_factor.valid,
         type=session["current_factor_type"],
     )
 
