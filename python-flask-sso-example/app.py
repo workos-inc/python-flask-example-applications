@@ -1,6 +1,5 @@
 import json
 import os
-from urllib.parse import urlparse, parse_qs
 from flask import Flask, session, redirect, render_template, request, url_for
 import workos
 
@@ -13,12 +12,12 @@ app.secret_key = os.getenv("APP_SECRET_KEY")
 # WorkOS Setup
 
 workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.project_id = os.getenv("WORKOS_CLIENT_ID")
+workos.client_id = os.getenv("WORKOS_CLIENT_ID")
 workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
 
 # Enter Organization ID here
 
-CUSTOMER_ORGANIZATION_ID = ""
+CUSTOMER_ORGANIZATION_ID = ""  # Use org_test_idp for testing
 
 
 def to_pretty_json(value):
@@ -44,15 +43,24 @@ def login():
 def auth():
 
     login_type = request.form.get("login_method")
+    if login_type not in (
+        "saml",
+        "GoogleOAuth",
+        "MicrosoftOAuth",
+    ):
+        return redirect("/")
 
-    params = {"redirect_uri": url_for("auth_callback", _external=True), "state": {}}
+    redirect_uri = url_for("auth_callback", _external=True)
 
-    if login_type == "saml":
-        params["organization"] = CUSTOMER_ORGANIZATION_ID
-    else:
-        params["provider"] = login_type
-
-    authorization_url = workos.client.sso.get_authorization_url(**params)
+    authorization_url = (
+        workos.client.sso.get_authorization_url(
+            redirect_uri=redirect_uri, organization_id=CUSTOMER_ORGANIZATION_ID
+        )
+        if login_type == "saml"
+        else workos.client.sso.get_authorization_url(
+            redirect_uri=redirect_uri, provider=login_type
+        )
+    )
 
     return redirect(authorization_url)
 
@@ -61,11 +69,13 @@ def auth():
 def auth_callback():
 
     code = request.args.get("code")
-    profile = workos.client.sso.get_profile_and_token(code)
-    p_profile = profile.to_dict()
-    session["first_name"] = p_profile["profile"]["first_name"]
-    session["raw_profile"] = p_profile["profile"]
-    session["session_id"] = p_profile["profile"]["id"]
+    # Why do I always get an error that the target does not belong to the target organization?
+    if code is None:
+        return redirect("/")
+    profile = workos.client.sso.get_profile_and_token(code).profile
+    session["first_name"] = profile.first_name
+    session["raw_profile"] = profile.dict()
+    session["session_id"] = profile.id
     return redirect("/")
 
 
