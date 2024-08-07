@@ -1,5 +1,4 @@
 import os
-from typing import TypeGuard, cast, get_args
 from flask import Flask, redirect, render_template, request, url_for
 import workos
 from workos import client as workos_client
