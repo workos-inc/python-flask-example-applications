@@ -9,6 +9,7 @@ import workos.resources
 import workos.resources.organizations
 import workos.resources.portal
 import workos.resources.sso
+from workos.types import DomainDataInput
 
 
 # Flask Setup
@@ -43,9 +44,7 @@ def provision_enterprise():
     else:
         domain_data = list(
             map(
-                lambda domain: workos.organizations.DomainDataInput(
-                    {"domain": domain, "state": "verified"}
-                ),
+                lambda domain: DomainDataInput({"domain": domain, "state": "verified"}),
                 organization_domains,
             )
         )
