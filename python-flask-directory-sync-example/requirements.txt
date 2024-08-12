@@ -1,7 +1,7 @@
-Flask>=1.1.2
-../../SDKs/workos-python
-workos>=5.0.0
+Flask==2.0.3
+workos==5.0.0b1
 urllib3>=2
 python-dotenv
 flask_socketio
 flask-lucide==0.2.0
+Werkzeug==2.0.1
