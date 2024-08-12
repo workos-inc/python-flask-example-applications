@@ -2,16 +2,18 @@ import os
 import json
 from flask import Flask, render_template, request
 import workos
-from workos import client as workos_client
 
 # Flask Setup
 DEBUG = False
 app = Flask(__name__)
 
 # WorkOS Setup
-workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.client_id = os.getenv("WORKOS_CLIENT_ID")
-workos.base_api_url = "http://localhost:5000/" if DEBUG else workos.base_api_url
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(
+    api_key=os.getenv("WORKOS_API_KEY"),
+    client_id=os.getenv("WORKOS_CLIENT_ID"),
+    base_url=base_api_url,
+)
 
 redirect_uri = "http://localhost:5000/success"
 
@@ -50,6 +52,6 @@ def success():
     code = request.args.get("code")
     if not code:
         return "No code provided"
-    profile = workos.client.sso.get_profile_and_token(code)
+    profile = workos_client.sso.get_profile_and_token(code)
 
     return render_template("success.html", raw_profile=profile.dict())
