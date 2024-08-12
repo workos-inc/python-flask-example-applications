@@ -19,9 +19,12 @@ lucide = Lucide(app)
 
 
 # WorkOS Setup
-workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.client_id = os.getenv("WORKOS_CLIENT_ID")
-workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(
+    api_key=os.getenv("WORKOS_API_KEY"),
+    client_id=os.getenv("WORKOS_CLIENT_ID"),
+    base_url=base_api_url,
+)
 
 
 def to_pretty_json(value):
@@ -34,7 +37,7 @@ app.jinja_env.filters["tojson_pretty"] = to_pretty_json
 @app.route("/", methods=["POST", "GET"])
 def index():
     try:
-        link = workos.client.portal.generate_link(
+        link = workos_client.portal.generate_link(
             organization_id=session["organization_id"], intent="audit_logs"
         )
         today = datetime.today()
@@ -50,7 +53,7 @@ def index():
     except KeyError:
         before = request.args.get("before")
         after = request.args.get("after")
-        organizations = workos.client.organizations.list_organizations(
+        organizations = workos_client.organizations.list_organizations(
             before=before, after=after, limit=5, order="desc"
         )
         before = organizations.list_metadata.before
@@ -68,10 +71,10 @@ def set_org():
     organization_id = request.args.get("id") or request.form["organization_id"]
 
     session["organization_id"] = organization_id
-    organization_set = workos.client.audit_logs.create_event(
-        organization_id, user_organization_set
+    workos_client.audit_logs.create_event(
+        organization_id=organization_id, event=user_organization_set
     )
-    org = workos.client.organizations.get_organization(organization_id)
+    org = workos_client.organizations.get_organization(organization_id)
     session["organization_name"] = org.name
     return redirect("/")
 
@@ -110,7 +113,9 @@ def send_event():
             },
         }
     )
-    organization_set = workos.client.audit_logs.create_event(organization_id, event)
+    organization_set = workos_client.audit_logs.create_event(
+        organization_id=organization_id, event=event
+    )
     return redirect("/")
 
 
@@ -149,7 +154,7 @@ def get_events():
 
         try:
 
-            create_export_response = workos.client.audit_logs.create_export(
+            create_export_response = workos_client.audit_logs.create_export(
                 organization_id=organization_id,
                 range_start=request.form["range-start"],
                 range_end=request.form["range-end"],
@@ -165,7 +170,7 @@ def get_events():
             return redirect("/")
     if event_type == "access_csv":
         export_id = session["export_id"]
-        fetch_export_response = workos.client.audit_logs.get_export(export_id)
+        fetch_export_response = workos_client.audit_logs.get_export(export_id)
         if fetch_export_response.url is None:
             return redirect("/")
 
@@ -178,7 +183,7 @@ def events():
     if not intent == "audit_logs":
         return redirect("/")
 
-    link = workos.client.portal.generate_link(
+    link = workos_client.portal.generate_link(
         organization_id=session["organization_id"], intent=intent
     )
 
