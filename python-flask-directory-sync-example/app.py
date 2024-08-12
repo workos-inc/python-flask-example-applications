@@ -17,7 +17,8 @@ socketio = SocketIO(app)
 if __name__ == "__main__":
     socketio.run(app)  # type: ignore
 
-workos_client = workos.WorkOSClient(api_key=os.getenv("WORKOS_API_KEY"), client_id=os.getenv("WORKOS_CLIENT_ID"))
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(api_key=os.getenv("WORKOS_API_KEY"), client_id=os.getenv("WORKOS_CLIENT_ID"), base_url=base_api_url)
 directory_id = os.getenv("DIRECTORY_ID")
 
 
