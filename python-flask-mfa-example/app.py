@@ -1,7 +1,6 @@
 import os
-from typing import Any, cast
+from typing import Any, assert_never, cast
 from flask import Flask, session, redirect, render_template, request, url_for, jsonify
-import json
 import workos
 from flask_lucide import Lucide
 
@@ -12,10 +11,12 @@ app.secret_key = os.getenv("APP_SECRET_KEY")
 lucide = Lucide(app)
 
 # WorkOS Setup
-
-workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.client_id = os.getenv("WORKOS_CLIENT_ID")
-workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(
+    api_key=os.getenv("WORKOS_API_KEY"),
+    client_id=os.getenv("WORKOS_CLIENT_ID"),
+    base_url=base_api_url,
+)
 
 
 @app.route("/")
@@ -45,7 +46,7 @@ def enroll_sms_factor():
     if not factor_type in ("sms", "totp"):
         return "Invalid factor type"
 
-    new_factor = workos.client.mfa.enroll_factor(
+    new_factor = workos_client.mfa.enroll_factor(
         type=factor_type, phone_number=phone_number
     )
 
@@ -61,7 +62,7 @@ def enroll_totp_factor():
     issuer = data["issuer"]
     user = data["user"]
 
-    new_factor = workos.client.mfa.enroll_factor(
+    new_factor = workos_client.mfa.enroll_factor(
         type=type, totp_issuer=issuer, totp_user=user
     )
 
@@ -95,20 +96,23 @@ def factor_detail():
 
 @app.route("/challenge_factor", methods=["POST"])
 def challenge_factor():
-    if session["current_factor_type"] == "sms":
+    factor_type = session["current_factor_type"]
+
+    if factor_type == "sms":
         message = request.form["sms_message"]
         session["sms_message"] = message
 
-        challenge = workos.client.mfa.challenge_factor(
+        challenge = workos_client.mfa.challenge_factor(
             authentication_factor_id=session["current_factor"],
             sms_template=message,
         )
-
-    if session["current_factor_type"] == "totp":
+    elif factor_type == "totp":
         authentication_factor_id = session["current_factor"]
-        challenge = workos.client.mfa.challenge_factor(
+        challenge = workos_client.mfa.challenge_factor(
             authentication_factor_id=authentication_factor_id,
         )
+    else:
+        assert_never(factor_type)
 
     session["challenge_id"] = challenge.id
     session.modified = True
@@ -125,7 +129,7 @@ def verify_factor():
 
     code = buildCode(request.form)
     challenge_id = session["challenge_id"]
-    verify_factor = workos.client.mfa.verify_challenge(
+    verify_factor = workos_client.mfa.verify_challenge(
         authentication_challenge_id=challenge_id,
         code=code,
     )
