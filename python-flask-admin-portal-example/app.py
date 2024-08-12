@@ -1,14 +1,8 @@
+from email.mime import base
 import os
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request
 import workos
-from workos import client as workos_client
 from flask_lucide import Lucide
-import workos.organizations
-import workos.portal
-import workos.resources
-import workos.resources.organizations
-import workos.resources.portal
-import workos.resources.sso
 from workos.types import DomainDataInput
 
 
@@ -18,9 +12,12 @@ app = Flask(__name__)
 lucide = Lucide(app)
 
 # WorkOS Setup
-workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.client_id = os.getenv("WORKOS_CLIENT_ID")
-workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(
+    api_key=os.getenv("WORKOS_API_KEY"),
+    client_id=os.getenv("WORKOS_CLIENT_ID"),
+    base_url=base_api_url,
+)
 
 
 @app.route("/")
