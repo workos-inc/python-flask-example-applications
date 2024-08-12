@@ -10,10 +10,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv("APP_SECRET_KEY")
 
 # WorkOS Setup
-
-workos.api_key = os.getenv("WORKOS_API_KEY")
-workos.client_id = os.getenv("WORKOS_CLIENT_ID")
-workos.base_api_url = "http://localhost:7000/" if DEBUG else workos.base_api_url
+base_api_url = "http://localhost:7000/" if DEBUG else None
+workos_client = workos.WorkOSClient(
+    api_key=os.getenv("WORKOS_API_KEY"),
+    client_id=os.getenv("WORKOS_CLIENT_ID"),
+    base_url=base_api_url,
+)
 
 # Enter Organization ID here
 
@@ -53,11 +55,11 @@ def auth():
     redirect_uri = url_for("auth_callback", _external=True)
 
     authorization_url = (
-        workos.client.sso.get_authorization_url(
+        workos_client.sso.get_authorization_url(
             redirect_uri=redirect_uri, organization_id=CUSTOMER_ORGANIZATION_ID
         )
         if login_type == "saml"
-        else workos.client.sso.get_authorization_url(
+        else workos_client.sso.get_authorization_url(
             redirect_uri=redirect_uri, provider=login_type
         )
     )
@@ -72,7 +74,7 @@ def auth_callback():
     # Why do I always get an error that the target does not belong to the target organization?
     if code is None:
         return redirect("/")
-    profile = workos.client.sso.get_profile_and_token(code).profile
+    profile = workos_client.sso.get_profile_and_token(code).profile
     session["first_name"] = profile.first_name
     session["raw_profile"] = profile.dict()
     session["session_id"] = profile.id
