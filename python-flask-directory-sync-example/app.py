@@ -125,7 +125,7 @@ def webhooks():
             payload = request.get_data()
             sig_header = request.headers["WorkOS-Signature"]
             response = workos_client.webhooks.verify_event(
-                payload=payload, event_signature=sig_header, secret=signing_secret
+                event_body=payload, event_signature=sig_header, secret=signing_secret
             )
             message = json.dumps(response.dict())
             socketio.emit("webhook_received", message)
