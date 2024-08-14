@@ -41,7 +41,7 @@ def provision_enterprise():
     else:
         domain_data = list(
             map(
-                lambda domain: DomainDataInput({"domain": domain, "state": "verified"}),
+                lambda domain: DomainDataInput(domain=domain, state="verified"),
                 organization_domains,
             )
         )
