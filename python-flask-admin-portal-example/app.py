@@ -7,12 +7,11 @@ from workos.types import DomainDataInput
 
 
 # Flask Setup
-DEBUG = False
 app = Flask(__name__)
 lucide = Lucide(app)
 
 # WorkOS Setup
-base_api_url = "http://localhost:7000/" if DEBUG else None
+base_api_url = os.getenv("WORKOS_BASE_API_URL")
 workos_client = workos.WorkOSClient(
     api_key=os.getenv("WORKOS_API_KEY"),
     client_id=os.getenv("WORKOS_CLIENT_ID"),
