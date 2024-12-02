@@ -371,9 +371,12 @@ h1 {
 }
 
 .error_message {
-  color: #6363f1;
-  margin-top: 0px;
-  font-size: 12px;
+  background-color: #f8d7da;
+  border: 1px solid #e74c3c;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  color: #c0291b;
 }
 
 #noborder {
