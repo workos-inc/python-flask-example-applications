@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, session, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 import workos
 
 
@@ -37,7 +37,15 @@ def login():
             raw_profile=session["raw_profile"],
         )
     except KeyError:
-        return render_template("login.html")
+        if "error" in session:
+            return render_template(
+                "login.html",
+                error=session.pop("error"),
+                error_description=session.pop("error_description"),
+                error_uri=session.pop("error_uri"),
+            )
+        else:
+            return render_template("login.html")
 
 
 @app.route("/auth", methods=["POST"])
@@ -69,6 +77,10 @@ def auth():
 @app.route("/auth/callback")
 def auth_callback():
 
+    if "error" in request.args:
+        session["error_description"] = request.args.get("error_description")
+        session["error_uri"] = request.args.get("error_uri")
+        session["error"] = request.args.get("error")
     code = request.args.get("code")
     # Why do I always get an error that the target does not belong to the target organization?
     if code is None:

@@ -24,15 +24,27 @@
             <a href="https://workos.com/" target="_blank"><button class='button button-outline'>WorkOS</button></a>
         </div>
     </div>
+    {% if error_description %}
+    <div class="flex flex_column error_message">
+        <span>
+            Error: <a href="{{ error_uri }}">
+            {{ error }}
+            </a>
+        </span>
+        <span>
+            {{ error_description }}
+        </span>
+    </div>
+    {% endif %}
     <div class="flex flex_column height-80vh">
-        <div class='flex height-40vh'>                                  
+        <div class='flex height-40vh'>
             <div class="card height-315 width-335">
                 <form method="POST" action="{{ url_for('auth') }}" class="mb-0">
                     <div class='flex_column'>
                         <div>
                             <span>Log in with SSO</span>
                         </div>
-                        <hr style="width:100%; margin-top: 15px; margin-bottom: 20px;">                    
+                        <hr style="width:100%; margin-top: 15px; margin-bottom: 20px;">
                         <button id="Google" name="login_method" value="GoogleOAuth" class="card login_button google_button">
                             <span>Google OAuth</span>
                         </button>
